@@ -1,5 +1,5 @@
 <h1 align="center">
-  Grow Up
+  Chat Duck
 </h1>
 
 ## Simple start
