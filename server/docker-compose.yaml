@@ -1,0 +1,11 @@
+version: '3.5'
+
+services:
+  chatduck_db:
+    container_name: chatduck
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=chatduck
+      - POSTGRES_PASSWORD=chatduck
+    image: postgres:15-alpine

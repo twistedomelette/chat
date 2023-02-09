@@ -1,0 +1,33 @@
+.posts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.post {
+    list-style-type: none;
+    border: 0.125rem solid black;
+}
+
+.post__header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.post__username {
+    width: 12rem;
+}
+
+.post__user-date {
+    display: flex;
+    gap: 2rem;
+}
+
+.post__header {
+    border-bottom: 0.125rem solid black;
+    padding: 0.6rem 2rem;
+}
+
+.post__text {
+    padding: 0.6rem 2rem;
+}
