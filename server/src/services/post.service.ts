@@ -1,14 +1,7 @@
 import { Post } from "../data/entities/post";
+import { In, IsNull } from "typeorm";
+import { PAGE_LIMIT } from "../helpers/constants/pagination.helper";
 
-interface IPost {
-    username: string;
-    email: string;
-    url: string;
-    image: string;
-    text: string;
-    post_id: string;
-    main_id: string;
-}
 
 export const createPost = async (
     data: Post | undefined,
@@ -32,14 +25,27 @@ export const createPost = async (
 };
 
 export const getPostsByMainId = async (
-    mainId: string
+    page: number
 ): Promise<Post[]> => {
-    if (!mainId) {
-        throw new Error('No required field username');
+    if (!page) {
+        page = 1
     }
+    const mainPosts: Post[] = await Post.find({
+        where: {
+            post_id: IsNull(),
+        },
+        order: {
+            createdAt: "DESC"
+        }
+    })
+
+    let mainIdsPosts = mainPosts.map(el => el.id)
+
+    mainIdsPosts = mainIdsPosts.splice(PAGE_LIMIT*(page-1), PAGE_LIMIT)
+
     const posts: Post[] = await Post.find({
         where: {
-            main_id: mainId,
+            main_id: In(mainIdsPosts)
         },
         order: {
             createdAt: "DESC"

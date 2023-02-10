@@ -6,10 +6,10 @@ const router: Router = Router();
 
 router
     .get(
-        '/:mainId',
+        '/',
         run((req) => {
             // @ts-ignore
-            return getPostsByMainId(req.params.mainId)
+            return getPostsByMainId(req?.query.page)
         }),
     )
     .post(
