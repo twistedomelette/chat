@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-// @ts-ignore
 import { ParamsDictionary, Params } from 'express-serve-static-core';
 
 export const run =

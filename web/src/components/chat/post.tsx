@@ -1,19 +1,18 @@
 import React, { Dispatch, SetStateAction } from "react";
+import { useDispatch } from "react-redux";
 import { IPost } from "./common/interfaces";
 import "./styles.css"
 
 interface IPostProps {
     post: IPost,
     gap: number,
-    setSelectedPost: Dispatch<SetStateAction<IPost | undefined>>
-    setIsModal: Dispatch<SetStateAction<boolean>>
-
 }
-function Post({post, gap, setSelectedPost, setIsModal} : IPostProps) {
+function Post({post, gap} : IPostProps) {
+    const dispatch = useDispatch()
 
     function handleAddPost () {
-        setSelectedPost(post)
-        setIsModal(true)
+        dispatch({type: "SELECT_POST", payload: post})
+        dispatch({type: "SET_MODAL", payload: true})
     }
 
     return (

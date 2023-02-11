@@ -8,15 +8,13 @@ router
     .get(
         '/',
         run((req) => {
-            // @ts-ignore
             return getPostsByMainId(req?.query.page)
         }),
     )
     .post(
         '/',
         run((req) => {
-            // @ts-ignore
-            return createPost(req.body)
+            return createPost(req?.body)
         }),
     );
 

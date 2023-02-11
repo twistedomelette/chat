@@ -22,6 +22,20 @@ export interface IPostForSend {
     main_id: string;
 }
 
+export interface IPostTake {
+    username: boolean;
+    email: boolean;
+    text: boolean;
+}
+
+export interface IPostErrors {
+    username: string;
+    email: string;
+    url : string
+    image: string;
+    text: string;
+}
+
 export interface IMessage {
     posts: IPost[]
     gaps: number[]

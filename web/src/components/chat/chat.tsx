@@ -9,12 +9,10 @@ import "./styles.css"
 interface IChatProps {
     posts: IPost[]
     setPage: Dispatch<SetStateAction<number>>
-    setSelectedPost: Dispatch<SetStateAction<IPost | undefined>>
-    setIsModal: Dispatch<SetStateAction<boolean>>
 }
-function Chat({posts, setPage, setSelectedPost, setIsModal}: IChatProps) {
+function Chat({posts, setPage}: IChatProps) {
     const dispatch = useDispatch()
-    const queuePosts = useSelector((state: IPostState) => state.queuePosts)
+    const queuePosts = useSelector((state: IPostState) => state.posts.queuePosts)
     function sortByMainId(a: IPost, b: IPost) {
         if (a.main_id > b.main_id)
             return -1
@@ -125,8 +123,6 @@ function Chat({posts, setPage, setSelectedPost, setIsModal}: IChatProps) {
                     key={post.id}
                     post={post}
                     gap={queuePosts[j].gaps[i] - 1}
-                    setSelectedPost={setSelectedPost}
-                    setIsModal={setIsModal}
                 />
             })
     }
