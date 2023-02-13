@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React from "react";
 import { useDispatch } from "react-redux";
 import { IPost } from "./common/interfaces";
 import "./styles.css"
@@ -34,6 +34,7 @@ function Post({post, gap} : IPostProps) {
                 </div>
             </div>
             <div className="post__text">
+                { post.image && <img src={post.image}  className="post__img" alt="img" /> }
                 <h2>{ post.text }</h2>
             </div>
         </li>

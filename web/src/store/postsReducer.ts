@@ -5,14 +5,16 @@ interface IDefaultState {
     queuePosts: IMessage[];
     selected: IPost;
     isShowModal: boolean;
-    isReload: boolean
+    isReload: boolean;
+    order: string;
 }
 
 const defaultState: IDefaultState = {
     queuePosts: [],
     selected: {} as IPost,
     isShowModal: false,
-    isReload: true
+    isReload: true,
+    order: 'createdAt'
 }
 
 export const postsReducer = (state = defaultState, action: IPostsAction) => {
@@ -25,6 +27,8 @@ export const postsReducer = (state = defaultState, action: IPostsAction) => {
             return { ...state, isShowModal: action.payload}
         case "RELOAD":
             return { ...state, isReload: action.payload}
+        case "ORDER_BY":
+            return { ...state, order: action.payload}
         default:
             return state
     }

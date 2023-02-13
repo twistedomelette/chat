@@ -13,6 +13,13 @@ interface IChatProps {
 function Chat({posts, setPage}: IChatProps) {
     const dispatch = useDispatch()
     const queuePosts = useSelector((state: IPostState) => state.posts.queuePosts)
+    const orderOptions = [
+        { value: 'createdAt', label: 'CreatedAt' },
+        { value: 'username', label: 'Username' },
+        { value: 'email', label: 'Email' },
+    ]
+    const [selectedOption, setSelectedOption] = useState<string>()
+
     function sortByMainId(a: IPost, b: IPost) {
         if (a.main_id > b.main_id)
             return -1
@@ -158,15 +165,27 @@ function Chat({posts, setPage}: IChatProps) {
         }
     }
 
+    const handleChangeOrder = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedOption(e.target.value)
+        dispatch({type: "ORDER_BY", payload: e.target.value})
+    }
+
     return (
         <>
+            <div className="posts__navigation">
+                <div className="posts__btns">
+                    <button className="posts__btn" onClick={handlePreviousClick}><h2>Previous</h2></button>
+                    <button className="posts__btn" onClick={handleNextClick}><h2>Next</h2></button>
+                </div>
+                <select onChange={handleChangeOrder} value={selectedOption}>
+                    {orderOptions.map(op => {
+                       return <option key={op.value} value={op.value}>{op.label}</option>
+                    })}
+                </select>
+            </div>
             <ul className="posts">
                 { queuePosts.length && posts.length ? chat : <h1>Empty</h1>}
             </ul>
-            <div className="posts__btns">
-                <button className="posts__btn" onClick={handlePreviousClick}><h2>Previous</h2></button>
-                <button className="posts__btn" onClick={handleNextClick}><h2>Next</h2></button>
-            </div>
         </>
     )
 }

@@ -1,19 +1,43 @@
+import uploadImage from "../common/upload-image";
+import { env } from "../config/env";
 import { Post } from "../data/entities/post";
 import { In, IsNull } from "typeorm";
 import { PAGE_LIMIT } from "../helpers/constants/pagination.helper";
 
 
+export interface IPostForSend {
+    username: string;
+    email: string;
+    url: string;
+    image: Express.Multer.File;
+    text: string;
+    post_id: string;
+    main_id: string;
+}
+
 export const createPost = async (
-    data: Post | undefined,
+    data: IPostForSend | undefined,
+    file: Express.Multer.File | undefined
 ): Promise<Post> => {
     if (!data) {
         throw new Error('Data is wrong');
     }
+
+    const props = {
+        secret: env.aws.secret || '',
+        access: env.aws.access || '',
+        bucketName: env.aws.bucket || '',
+    };
+
+    let image
+    if (file)
+        image = await uploadImage({ ...props, file: file });
+
     const newPost = Post.create({
         username: data.username,
         email: data.email,
         url: data.url,
-        image: data.image,
+        image: image?.Location || '',
         text: data.text,
         post_id: data.post_id,
         main_id: data.main_id,
@@ -24,8 +48,9 @@ export const createPost = async (
     return newPost
 };
 
-export const getPostsByMainId = async (
-    page: number
+export const getPosts = async (
+    page: number,
+    order: string
 ): Promise<Post[]> => {
     if (!page) {
         page = 1
@@ -35,7 +60,7 @@ export const getPostsByMainId = async (
             post_id: IsNull(),
         },
         order: {
-            createdAt: "DESC"
+            [order]: "DESC"
         }
     })
 

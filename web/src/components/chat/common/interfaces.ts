@@ -16,7 +16,7 @@ export interface IPostForSend {
     username: string;
     email: string;
     url: string;
-    image: string;
+    image: File | string;
     text: string;
     post_id: string;
     main_id: string;
@@ -34,6 +34,7 @@ export interface IPostErrors {
     url : string
     image: string;
     text: string;
+    captcha: string;
 }
 
 export interface IMessage {

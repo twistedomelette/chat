@@ -12,17 +12,18 @@ function App() {
     const [page, setPage] = useState<number>(1)
     const [loading, setLoading] = useState<boolean>(true)
     const isReload = useSelector((state: IPostState) => state.posts.isReload)
+    const order = useSelector((state: IPostState) => state.posts.order)
     const dispatch = useDispatch()
 
     useEffect( () => {
         const loadData = async () => {
-            const getPosts = await axios.get(`${BaseURL}/api/post`, { params: { page: page } })
+            const getPosts = await axios.get(`${BaseURL}/api/post`, { params: { page: page, order: order } })
             setPosts(getPosts.data)
         }
         loadData()
         setLoading(false)
         dispatch({type: "RELOAD", payload: false})
-    }, [page, isReload, dispatch])
+    }, [page, isReload, dispatch, order])
 
     return (
         <div className="App">

@@ -18,7 +18,7 @@ routes(app);
 
 app.listen(port, async () => {
     try {
-        const connection = await createConnection({
+        await createConnection({
             type: "postgres",
             host: env.db.host,
             port: env.db.port,
@@ -28,7 +28,6 @@ app.listen(port, async () => {
             entities: env.db.enititiesDir ? [env.db.enititiesDir] : [],
             synchronize: env.db.synchronize
         });
-        // console.log(connection)
         console.log("Started...")
     } catch (error) {
         console.log(error)

@@ -1,16 +1,17 @@
 import axios from "axios";
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useRef, useState } from "react";
 import "./styles.css"
 import { useDispatch, useSelector } from "react-redux";
 import { BaseURL } from "../../helpers/constants/path";
 import IPostState from "../../store/common/interfaces";
 import { IPostErrors, IPostForSend, IPostTake } from "./common/interfaces";
-
+import ReCAPTCHA from "react-google-recaptcha";
 
 function Modal() {
     const selectedPost = useSelector((state: IPostState) => state.posts.selected)
     const isShowModal = useSelector((state: IPostState) => state.posts.isShowModal)
     const dispatch = useDispatch()
+    const captchaRef = useRef<ReCAPTCHA>(null)
     const [newPost, setNewPost] = useState<IPostForSend>({
         username: "",
         email: "",
@@ -31,6 +32,7 @@ function Modal() {
         url: "",
         image: "",
         text: "Empty field",
+        captcha: "Get tested"
     })
 
     function checkErrorsPost() {
@@ -84,6 +86,11 @@ function Modal() {
             setErrorsPost({ ...errorsPost, url: "" })
         }
     }
+    function onChangeFile(e: React.ChangeEvent<HTMLInputElement>) {
+        if (e.target.files) {
+            setNewPost({ ...newPost, image: e.target.files[0] })
+        }
+    }
     function onChangeText(e: React.ChangeEvent<HTMLInputElement>) {
         setNewPost({ ...newPost, text: e.target.value })
         setErrorsPost({ ...errorsPost, text: "" })
@@ -99,8 +106,15 @@ function Modal() {
     async function handleSubmit(e: FormEvent) {
         e.preventDefault();
         if ("id" in selectedPost) {
-            const post = { ...newPost, post_id: selectedPost.id, main_id: selectedPost.main_id }
-            await axios.post(`${BaseURL}/api/post`, post)
+            const post = { ...newPost, post_id: selectedPost.id, main_id: selectedPost.main_id}
+            const formData = new FormData();
+            formData.append("image", post.image);
+            formData.append("post", JSON.stringify(post));
+            await axios.post(`${BaseURL}/api/post`, post, {
+                headers: {
+                    'Content-Type': 'multipart/form-data; boundary=------WebKitFormBoundaryGEmKHDASGjB7QEah',
+                },
+            })
                 .then(_ => {
                     dispatch({type: "RELOAD", payload: true})
                 })
@@ -111,6 +125,13 @@ function Modal() {
 
         dispatch({type: "SET_MODAL", payload: false})
     }
+
+    function onChange(value: string | null) {
+        if (value) {
+            setErrorsPost({ ...errorsPost, captcha: "" })
+        }
+    }
+
 
     return (
         <form onSubmit={handleSubmit} className={`modal ${!isShowModal ? "modal__show" : ""}`} >
@@ -162,6 +183,7 @@ function Modal() {
                         className="content__img-input"
                         type="file"
                         placeholder="Image"
+                        onChange={onChangeFile}
                     />
                 </div>
                 <div className="content__text">
@@ -177,6 +199,10 @@ function Modal() {
                         onChange={onChangeText}
                     />
                 </div>
+                <ReCAPTCHA
+                    sitekey='6Ley-ngkAAAAAC84RfqpLKhMYIPL3qAmd8ccPgYr'
+                    onChange={onChange}
+                />
             </div>
             <div className="modal__actions">
                 <button disabled={checkErrorsPost()} className="modal__btn" type="submit">

@@ -11,6 +11,7 @@ interface IPostReducer {
     selected: IPost | object
     isShowModal: boolean;
     isReload: boolean
+    order: string
 }
 
 export default interface IPostState {
