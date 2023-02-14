@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { IPost } from "./common/interfaces";
 import "./styles.css"
@@ -9,6 +9,7 @@ interface IPostProps {
 }
 function Post({post, gap} : IPostProps) {
     const dispatch = useDispatch()
+    const [isDownload, setIsDownload] = useState<boolean>(false)
 
     function handleAddPost () {
         dispatch({type: "SELECT_POST", payload: post})
@@ -34,7 +35,11 @@ function Post({post, gap} : IPostProps) {
                 </div>
             </div>
             <div className="post__text">
-                { post.image && <img src={post.image}  className="post__img" alt="img" /> }
+                { post.image && (post.image.slice(-3) !== 'txt' ?
+                    <img src={post.image} className="post__img" alt="img" /> :
+                        <button onClick={() => setIsDownload(true)}>Download File</button>
+                )}
+                { isDownload && <embed src={post.image} className="post__download-file" />}
                 <h2>{ post.text }</h2>
             </div>
         </li>

@@ -1,20 +1,30 @@
 import cors from 'cors';
-import express, { Express } from 'express';
 import { createConnection } from 'typeorm';
+const express = require('express');
+const server = express();
+const WSServer = require('express-ws')(server);
+const aWss = WSServer.getWss()
 
 import routes from './api/routes';
+import notifyHandler from "./app";
 
 import { env } from './config/env';
 
 const { port } = env.app;
 
-const app: Express = express();
+let { app } = WSServer
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 routes(app);
+
+app.ws('/', (ws: { on: (arg0: string, arg1: (msg: string) => void) => void; }) => {
+    ws.on('message', (msg: string) => {
+        notifyHandler(aWss, msg)
+    })
+})
 
 app.listen(port, async () => {
     try {
@@ -33,4 +43,5 @@ app.listen(port, async () => {
         console.log(error)
     }
 });
+
 export default app;

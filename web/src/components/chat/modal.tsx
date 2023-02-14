@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { FormEvent, useRef, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import "./styles.css"
 import { useDispatch, useSelector } from "react-redux";
 import { BaseURL } from "../../helpers/constants/path";
@@ -11,7 +11,8 @@ function Modal() {
     const selectedPost = useSelector((state: IPostState) => state.posts.selected)
     const isShowModal = useSelector((state: IPostState) => state.posts.isShowModal)
     const dispatch = useDispatch()
-    const captchaRef = useRef<ReCAPTCHA>(null)
+
+    const [isReloadFlag, setIsReloadFlag] = useState<boolean>(false)
     const [newPost, setNewPost] = useState<IPostForSend>({
         username: "",
         email: "",
@@ -34,6 +35,27 @@ function Modal() {
         text: "Empty field",
         captcha: "Get tested"
     })
+
+    useEffect(() => {
+        const socket = new WebSocket('ws://localhost:3001')
+
+        if (isReloadFlag) {
+            socket.onopen = () => {
+                socket.send(JSON.stringify({
+                    type: "reload"
+                }))
+            }
+        }
+        socket.onmessage = (e) => {
+            const data = JSON.parse(e.data)
+            if (data.type === "reload") {
+                setIsReloadFlag(false)
+                dispatch({type: "RELOAD", payload: true})
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isReloadFlag])
+
 
     function checkErrorsPost() {
         let flag = false
@@ -87,8 +109,22 @@ function Modal() {
         }
     }
     function onChangeFile(e: React.ChangeEvent<HTMLInputElement>) {
+        setErrorsPost({ ...errorsPost, image: "" })
         if (e.target.files) {
             setNewPost({ ...newPost, image: e.target.files[0] })
+        }
+        const ext = e.target.value.match(/\.([^]+)$/)
+        if (ext) {
+            switch (ext[0]) {
+                case '.jpg':
+                case '.png':
+                case '.gif':
+                case '.txt':
+                    break;
+                default:
+                    setErrorsPost({ ...errorsPost, image: "Permission not available" })
+                    e.target.value = ''
+            }
         }
     }
     function onChangeText(e: React.ChangeEvent<HTMLInputElement>) {
@@ -100,6 +136,15 @@ function Modal() {
     }
     function onClose(e: FormEvent) {
         e.preventDefault();
+        setNewPost({
+            username: "",
+            email: "",
+            url: "",
+            image: "",
+            text: "",
+            post_id: "",
+            main_id: ""
+        })
         dispatch({type: "SET_MODAL", payload: false})
     }
 
@@ -117,6 +162,7 @@ function Modal() {
             })
                 .then(_ => {
                     dispatch({type: "RELOAD", payload: true})
+                    setIsReloadFlag(true)
                 })
                 .catch(err => {
                     alert(`Oh no, ${err.message}`);
@@ -184,6 +230,7 @@ function Modal() {
                         type="file"
                         placeholder="Image"
                         onChange={onChangeFile}
+                        accept=".jpg,.png,.gif,.txt"
                     />
                 </div>
                 <div className="content__text">
@@ -200,7 +247,8 @@ function Modal() {
                     />
                 </div>
                 <ReCAPTCHA
-                    sitekey='6Ley-ngkAAAAAC84RfqpLKhMYIPL3qAmd8ccPgYr'
+                    className="captcha"
+                    sitekey="6Ley-ngkAAAAAC84RfqpLKhMYIPL3qAmd8ccPgYr"
                     onChange={onChange}
                 />
             </div>
