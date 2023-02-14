@@ -13,12 +13,53 @@ interface IChatProps {
 function Chat({posts, setPage}: IChatProps) {
     const dispatch = useDispatch()
     const queuePosts = useSelector((state: IPostState) => state.posts.queuePosts)
+    const [selectedOption, setSelectedOption] = useState<string>()
+    const [flag, setFlag] = useState<boolean>(true)
+    const [nowPage, setNowPage] = useState<number>(1)
+    const [sortPosts, setSortPosts] = useState<IPost[]>([])
     const orderOptions = [
         { value: 'createdAt', label: 'CreatedAt' },
         { value: 'username', label: 'Username' },
         { value: 'email', label: 'Email' },
     ]
-    const [selectedOption, setSelectedOption] = useState<string>()
+    const navigate = useNavigate();
+
+    const chat: React.ReactNode[] = []
+    if (queuePosts.length) {
+        for (let j = 0; j < queuePosts.length; j++)
+            chat[j] = queuePosts[j].posts.map((post: IPost, i: number) => {
+                return <Post
+                    key={post.id}
+                    post={post}
+                    gap={queuePosts[j].gaps[i] - 1}
+                />
+            })
+    }
+
+    useEffect(() => {
+        navigate({ search: `` });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    useEffect(() => {
+        if (posts.length) {
+            setSortPosts(posts.sort(sortByMainId))
+            setFlag(false)
+        }
+    }, [posts])
+
+    useEffect(() => {
+        if (!flag) {
+            setFlag(true)
+            const loadData = async () => {
+                const messagesBlocks = await getContainerOfMessages(sortPosts)
+                const correctQueues = await getCorrectQueue(messagesBlocks)
+                dispatch({type: "ADD_ALL_POSTS", payload: correctQueues})
+            }
+            loadData()
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sortPosts, nowPage, flag, dispatch])
 
     function sortByMainId(a: IPost, b: IPost) {
         if (a.main_id > b.main_id)
@@ -37,7 +78,6 @@ function Chat({posts, setPage}: IChatProps) {
         }
         return messagesBlocks
     }
-
 
     function getGapByPointer(posts: IPost[], putPosts: number[], pointer: string): number {
         for (let k = 0; k < posts.length; k++) {
@@ -98,48 +138,6 @@ function Chat({posts, setPage}: IChatProps) {
         return correctQueue
     }
 
-    const [flag, setFlag] = useState<boolean>(true)
-    const [nowPage, setNowPage] = useState<number>(1)
-    const [sortPosts, setSortPosts] = useState<IPost[]>([])
-
-    useEffect(() => {
-        if (posts.length) {
-            setSortPosts(posts.sort(sortByMainId))
-            setFlag(false)
-        }
-    }, [posts])
-
-    useEffect(() => {
-        if (!flag) {
-            setFlag(true)
-            const loadData = async () => {
-                const messagesBlocks = await getContainerOfMessages(sortPosts)
-                const correctQueues = await getCorrectQueue(messagesBlocks)
-                dispatch({type: "ADD_ALL_POSTS", payload: correctQueues})
-            }
-            loadData()
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [sortPosts, nowPage, flag, dispatch])
-
-    const chat: React.ReactNode[] = []
-    if (queuePosts.length) {
-        for (let j = 0; j < queuePosts.length; j++)
-            chat[j] = queuePosts[j].posts.map((post: IPost, i: number) => {
-                return <Post
-                    key={post.id}
-                    post={post}
-                    gap={queuePosts[j].gaps[i] - 1}
-                />
-            })
-    }
-
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        navigate({ search: `` });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
     function handlePreviousClick () {
         const query = new URLSearchParams(window.location.search);
         const pageNumber = query.get('page')
@@ -170,6 +168,11 @@ function Chat({posts, setPage}: IChatProps) {
         dispatch({type: "ORDER_BY", payload: e.target.value})
     }
 
+    function handleAddPost () {
+        dispatch({type: "SELECT_POST", payload: null})
+        dispatch({type: "SET_MODAL", payload: true})
+    }
+
     return (
         <>
             <div className="posts__navigation">
@@ -182,6 +185,9 @@ function Chat({posts, setPage}: IChatProps) {
                        return <option key={op.value} value={op.value}>{op.label}</option>
                     })}
                 </select>
+            </div>
+            <div className="posts__add-block">
+                <button className="posts__btn" onClick={handleAddPost}><h2>ADD POST</h2></button>
             </div>
             <ul className="posts">
                 { queuePosts.length && posts.length ? chat : <h1>Empty</h1>}

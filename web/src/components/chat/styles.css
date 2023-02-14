@@ -55,6 +55,11 @@
     width: 10rem;
 }
 
+.posts__add-block {
+    display: flex;
+    justify-content: center;
+}
+
 .post__date {
     margin: 0;
 }

@@ -3,7 +3,7 @@ import IPostsAction from "./common/interfaces";
 
 interface IDefaultState {
     queuePosts: IMessage[];
-    selected: IPost;
+    selected: IPost | null;
     isShowModal: boolean;
     isReload: boolean;
     order: string;
@@ -11,7 +11,7 @@ interface IDefaultState {
 
 const defaultState: IDefaultState = {
     queuePosts: [],
-    selected: {} as IPost,
+    selected: null,
     isShowModal: false,
     isReload: true,
     order: 'createdAt'

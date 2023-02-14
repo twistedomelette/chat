@@ -16,10 +16,10 @@ export interface IPostForSend {
     username: string;
     email: string;
     url: string;
-    image: File | string;
+    image: File | null;
     text: string;
-    post_id: string;
-    main_id: string;
+    post_id: string | null;
+    main_id: string | null;
 }
 
 export interface IPostTake {

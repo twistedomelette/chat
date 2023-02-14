@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useEffect, useRef, useState } from "react";
 import "./styles.css"
 import { useDispatch, useSelector } from "react-redux";
 import { BaseURL } from "../../helpers/constants/path";
@@ -12,12 +12,13 @@ function Modal() {
     const isShowModal = useSelector((state: IPostState) => state.posts.isShowModal)
     const dispatch = useDispatch()
 
+    const captcha = useRef<ReCAPTCHA>(null)
     const [isReloadFlag, setIsReloadFlag] = useState<boolean>(false)
     const [newPost, setNewPost] = useState<IPostForSend>({
         username: "",
         email: "",
         url: "",
-        image: "",
+        image: null,
         text: "",
         post_id: "",
         main_id: ""
@@ -114,6 +115,7 @@ function Modal() {
             setNewPost({ ...newPost, image: e.target.files[0] })
         }
         const ext = e.target.value.match(/\.([^]+)$/)
+
         if (ext) {
             switch (ext[0]) {
                 case '.jpg':
@@ -140,34 +142,54 @@ function Modal() {
             username: "",
             email: "",
             url: "",
-            image: "",
+            image: null,
             text: "",
             post_id: "",
             main_id: ""
         })
+        setIsTakePost({
+            username: false,
+            email: false,
+            text: false,
+        })
+        setErrorsPost({
+            username: "Empty field",
+            email: "Empty field",
+            url: "",
+            image: "",
+            text: "Empty field",
+            captcha: "Get tested"
+        })
+        if (captcha.current) {
+            captcha.current.reset()
+        }
         dispatch({type: "SET_MODAL", payload: false})
     }
 
     async function handleSubmit(e: FormEvent) {
         e.preventDefault();
-        if ("id" in selectedPost) {
-            const post = { ...newPost, post_id: selectedPost.id, main_id: selectedPost.main_id}
-            const formData = new FormData();
-            formData.append("image", post.image);
-            formData.append("post", JSON.stringify(post));
-            await axios.post(`${BaseURL}/api/post`, post, {
-                headers: {
-                    'Content-Type': 'multipart/form-data; boundary=------WebKitFormBoundaryGEmKHDASGjB7QEah',
-                },
-            })
-                .then(_ => {
-                    dispatch({type: "RELOAD", payload: true})
-                    setIsReloadFlag(true)
-                })
-                .catch(err => {
-                    alert(`Oh no, ${err.message}`);
-                });
+        let post
+        if (selectedPost) {
+            post = { ...newPost, post_id: selectedPost.id, main_id: selectedPost.main_id }
+        } else {
+            post = { ...newPost }
         }
+        const formData = new FormData();
+        formData.append("image", post.image ? post.image : '');
+        formData.append("post", JSON.stringify(post));
+        await axios.post(`${BaseURL}/api/post`, post, {
+            headers: {
+                'Content-Type': 'multipart/form-data; boundary=------WebKitFormBoundaryGEmKHDASGjB7QEah',
+            },
+        })
+            .then(_ => {
+                dispatch({type: "RELOAD", payload: true})
+                setIsReloadFlag(true)
+            })
+            .catch(err => {
+                alert(`Oh no, ${err.message}`);
+            });
+
 
         dispatch({type: "SET_MODAL", payload: false})
     }
@@ -229,6 +251,7 @@ function Modal() {
                         className="content__img-input"
                         type="file"
                         placeholder="Image"
+                        key={newPost.image ? newPost.image.name : ''}
                         onChange={onChangeFile}
                         accept=".jpg,.png,.gif,.txt"
                     />
@@ -250,6 +273,7 @@ function Modal() {
                     className="captcha"
                     sitekey="6Ley-ngkAAAAAC84RfqpLKhMYIPL3qAmd8ccPgYr"
                     onChange={onChange}
+                    ref={captcha}
                 />
             </div>
             <div className="modal__actions">

@@ -3,6 +3,7 @@ import { env } from "../config/env";
 import { Post } from "../data/entities/post";
 import { In, IsNull } from "typeorm";
 import { PAGE_LIMIT } from "../helpers/constants/pagination.helper";
+import { v4 as uuidv4 } from 'uuid';
 
 
 export interface IPostForSend {
@@ -11,8 +12,8 @@ export interface IPostForSend {
     url: string;
     image: Express.Multer.File;
     text: string;
-    post_id: string;
-    main_id: string;
+    post_id: string | undefined;
+    main_id: string | undefined;
 }
 
 export const createPost = async (
@@ -33,16 +34,30 @@ export const createPost = async (
     if (file)
         image = await uploadImage({ ...props, file: file });
 
-    const newPost = Post.create({
-        username: data.username,
-        email: data.email,
-        url: data.url,
-        image: image?.Location || '',
-        text: data.text,
-        post_id: data.post_id,
-        main_id: data.main_id,
-    })
-
+    const id = uuidv4()
+    let newPost
+    if (data.post_id) {
+        newPost = Post.create({
+            id: id,
+            username: data.username,
+            email: data.email,
+            url: data.url,
+            image: image?.Location || '',
+            text: data.text,
+            post_id: data.post_id,
+            main_id: data.main_id,
+        })
+    } else {
+        newPost = Post.create({
+            id: id,
+            username: data.username,
+            email: data.email,
+            url: data.url,
+            image: image?.Location || '',
+            text: data.text,
+            main_id: id,
+        })
+    }
     await newPost.save()
 
     return newPost

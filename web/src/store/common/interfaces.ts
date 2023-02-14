@@ -8,7 +8,7 @@ export default interface IPostsAction {
 
 interface IPostReducer {
     queuePosts: IMessage[]
-    selected: IPost | object
+    selected: IPost | null
     isShowModal: boolean;
     isReload: boolean
     order: string
